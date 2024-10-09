@@ -1,0 +1,105 @@
+from flask import Flask, jsonify, request
+from flask_pymongo import PyMongo
+from datetime import datetime
+
+app = Flask(__name__)
+
+# MongoDB 설정
+app.config["MONGO_URI"] = "mongodb://localhost:27017/admin"
+mongo = PyMongo(app)
+
+# 자전거 정보 추가
+@app.route('/bicycles', methods=['POST'])
+def add_bicycle():
+    data = request.json
+    bike_id = data.get('bikeId')
+    status = data.get('status')
+    # location = data.get('location')
+
+    if mongo.db.bicycles.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This bikeId already exist"}), 400
+
+    mongo.db.bicycles.insert_one({
+        "bikeId": bike_id,
+        "status": status,
+        # "location": location
+    })
+    return jsonify({"message": "Inserted bike ID"}), 200
+
+# 자전거 정보 삭제
+@app.route('/bicycles', methods=['DELETE'])
+def delete_bicycle():
+    data = request.json
+    bike_id = data.get('bikeId')
+
+    if not mongo.db.bicycles.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This bikeId dosen't exist"}), 400
+
+    mongo.db.bicycles.delete_one({"bikeId": bike_id})
+    return jsonify({"message": "Deleted bike ID"}), 200
+
+# 사용자 정보 추가
+@app.route('/users', methods=['POST'])
+def add_user():
+    data = request.json
+    user_id = data.get('userId')
+    password = data.get('password')
+
+    if mongo.db.users.find_one({"userId": user_id}):
+        return jsonify({"error": "This userId already exist"}), 400
+
+    mongo.db.users.insert_one({
+        "userId": user_id,
+        "password": password
+    })
+    return jsonify({"message": "Inserted user ID"}), 200
+
+# 사용자 정보 삭제
+@app.route('/users', methods=['DELETE'])
+def delete_user():
+    data = request.json
+    user_id = data.get('userId')
+
+    if not mongo.db.users.find_one({"userId": user_id}):
+        return jsonify({"error": "This userId dosen't exist"}), 400
+
+    mongo.db.users.delete_one({"userId": user_id})
+    return jsonify({"message": "Deleted user ID"}), 200
+
+# 신고 정보 추가
+@app.route('/reports', methods=['POST'])
+def add_report():
+    data = request.json
+    bike_id = data.get('bikeId')
+    user_id = data.get('userId')
+    report_content = data.get('contents')
+
+    # 자전거와 사용자 존재 여부 확인
+    if not mongo.db.bicycles.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This bikeId dosen't exist"}), 400
+
+    if not mongo.db.users.find_one({"userId": user_id}):
+        return jsonify({"error": "This userId dosen't exist"}), 400
+
+    mongo.db.reports.insert_one({
+        "bikeId": bike_id,
+        "userId": user_id,
+        "date": datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
+        "contents": report_content
+    })
+    return jsonify({"message": "Report Succesced"}), 200
+
+# 신고 정보 삭제
+@app.route('/reports', methods=['DELETE'])
+def delete_report():
+    data = request.json
+    bike_id = data.get('bikeId')
+
+    if not mongo.db.reports.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This report dosen't exist"}), 400
+
+    mongo.db.reports.delete_many({"bikeId": bike_id})
+    return jsonify({"message": "Deleted report"}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
