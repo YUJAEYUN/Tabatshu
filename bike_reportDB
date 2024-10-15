@@ -240,11 +240,24 @@ def get_report():
             "contents": report['contents']
         })
         
+        if not report['imageId'] == None:
+            report_data['image'] = get_image_url(report['imageId'])
         report_list.append(report_data)
     return jsonify(report_list), 200
 
+def get_image_url(image_id):
+    image = fs.find_one({"_id": ObjectId(image_id)})
+    if image:
+        return f"/image/{image_id}"
+    return None
 
-
+# 이미지 로드 테스트
+@app.route('/image/<image_id>', methods=['GET'])
+def get_image(image_id):
+    image = fs.find_one({"_id": ObjectId(image_id)})
+    if image:
+        return image.read(), 200, {'Content-Type': image.content_type}
+    return jsonify({"error": "이미지를 찾을 수 없습니다."}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
