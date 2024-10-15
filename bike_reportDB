@@ -9,12 +9,15 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/admin"
 mongo = PyMongo(app)
 
 # 자전거 정보 추가
+# 초기 추가 시 status는 'available'로 설정
 @app.route('/bicycles', methods=['POST'])
 def add_bicycle():
     data = request.json
     bike_id = data.get('bikeId')
-    status = data.get('status')
-    # location = data.get('location')
+    status = "available"
+    location = data.get('location')
+    rent_date = None
+    return_date = None
 
     if mongo.db.bicycles.find_one({"bikeId": bike_id}):
         return jsonify({"error": "This bikeId already exist"}), 400
@@ -22,7 +25,9 @@ def add_bicycle():
     mongo.db.bicycles.insert_one({
         "bikeId": bike_id,
         "status": status,
-        # "location": location
+        "location": location,
+        "rent_date": rent_date,
+        "return_date": return_date
     })
     return jsonify({"message": "Inserted bike ID"}), 200
 
@@ -48,7 +53,12 @@ def get_bicycle():
         return jsonify({"error": "This bikeId dosen't exist"}), 400
 
     bicycle = mongo.db.bicycles.find_one({"bikeId": bike_id})
-    return jsonify({"bikeId": bicycle['bikeId'], "status": bicycle['status']}), 200
+    return jsonify({
+        "bikeId": bicycle['bikeId'],
+        "status": bicycle['status'],
+        "location": bicycle['location'],
+        "rentDate": bicycle['rentDate'],
+        "returnDate": bicycle['returnDate']}), 200
 
 # 사용자 정보 추가
 @app.route('/users', methods=['POST'])
