@@ -36,6 +36,36 @@ def add_bicycle():
     })
     return jsonify({"message": "Inserted bike ID"}), 200
 
+# 자전거 정보 수정 (status, location, rentDate, returnDate)
+# user가 대여시, 반납시
+@app.route('/bicycles', methods=['PUT'])
+def update_bicycle():
+    """
+    input: 
+        "bikeId": "수정할 자전거 ID",
+        "status": "자전거 상태(Available, Rented, Reported)",
+        "location": "자전거 위치",
+        "rentDate": "대여 날짜(미해당시 None)",
+        "returnDate": "반납 날짜(미해당시 None)"
+    """
+    data = request.json
+    bike_id = data.get('bikeId')
+    status = data.get('status')
+    location = data.get('location')
+    rent_date = data.get('rentDate')
+    return_date = data.get('returnDate')
+
+    if not mongo.db.bicycles.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This bikeId dosen't exist"}), 400
+
+    mongo.db.bicycles.update_one({"bikeId": bike_id}, {"$set": {
+        "status": status,
+        "location": location,
+        "rentDate": rent_date,
+        "returnDate": return_date
+    }})
+    return jsonify({"message": "Updated bike ID"}), 200
+
 # 자전거 정보 삭제
 @app.route('/bicycles', methods=['DELETE'])
 def delete_bicycle():
