@@ -1,12 +1,16 @@
 from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 from datetime import datetime
+import gridfs
+import json
+from bson import ObjectId
 
 app = Flask(__name__)
 
 # MongoDB 설정
 app.config["MONGO_URI"] = "mongodb://localhost:27017/admin"
 mongo = PyMongo(app)
+fs = gridfs.GridFS(mongo.db)
 
 # 자전거 정보 추가
 # 초기 추가 시 status는 'available'로 설정
@@ -165,10 +169,15 @@ def add_report():
         "userId": "신고한 user ID",
         "contents": "신고 내용"
     """
-    data = request.json
+    # data = request.json
+    data = json.loads(request.form.get('data'))
     bike_id = data.get('bikeId')
     user_id = data.get('userId')
     report_content = data.get('contents')
+    # bike_id = request.form.get('bikeId')
+    # user_id = request.form.get('userId')
+    # report_content = request.form.get('contents')
+    image = request.files.get('image')
 
     # 자전거와 사용자 존재 여부 확인
     if not mongo.db.bicycles.find_one({"bikeId": bike_id}):
@@ -177,11 +186,17 @@ def add_report():
     if not mongo.db.users.find_one({"userId": user_id}):
         return jsonify({"error": "This userId dosen't exist"}), 400
 
+    # 이미지 GridFS에 저장
+    image_id = None
+    if image:
+        image_id = fs.put(image, filename=image.filename)
+
     mongo.db.reports.insert_one({
         "bikeId": bike_id,
         "userId": user_id,
         "date": datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
-        "contents": report_content
+        "contents": report_content,
+        "imageId": image_id
     })
     return jsonify({"message": "Report Succesced"}), 200
 
