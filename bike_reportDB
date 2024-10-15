@@ -12,6 +12,11 @@ mongo = PyMongo(app)
 # 초기 추가 시 status는 'available'로 설정
 @app.route('/bicycles', methods=['POST'])
 def add_bicycle():
+    """
+    input: 
+        "bikeId": "자전거 ID",
+        "location": "자전거 위치"
+    """
     data = request.json
     bike_id = data.get('bikeId')
     status = "available"
@@ -34,6 +39,10 @@ def add_bicycle():
 # 자전거 정보 삭제
 @app.route('/bicycles', methods=['DELETE'])
 def delete_bicycle():
+    """
+    input:
+        "bikeId": "삭제할 자전거 ID"
+    """
     data = request.json
     bike_id = data.get('bikeId')
 
@@ -46,6 +55,10 @@ def delete_bicycle():
 # 자전거 정보 조회
 @app.route('/bicycles', methods=['GET'])
 def get_bicycle():
+    """
+    input:
+        "bikeId": "조회할 자전거 ID"
+    """
     data = request.json
     bike_id = data.get('bikeId')
 
@@ -63,6 +76,11 @@ def get_bicycle():
 # 사용자 정보 추가
 @app.route('/users', methods=['POST'])
 def add_user():
+    """
+    input:
+        "userId": "user ID",
+        "password": "user pw"
+    """
     data = request.json
     user_id = data.get('userId')
     password = data.get('password')
@@ -79,6 +97,10 @@ def add_user():
 # 사용자 정보 삭제
 @app.route('/users', methods=['DELETE'])
 def delete_user():
+    """
+    input:
+        "userId": "삭제할 user ID"
+    """
     data = request.json
     user_id = data.get('userId')
 
@@ -91,6 +113,10 @@ def delete_user():
 # 사용자 정보 조회
 @app.route('/users', methods=['GET'])
 def get_user():
+    """
+    input:
+        "userId": "조회할 user ID"
+    """
     data = request.json
     user_id = data.get('userId')
 
@@ -103,6 +129,12 @@ def get_user():
 # 신고 정보 추가
 @app.route('/reports', methods=['POST'])
 def add_report():
+    """
+    input:
+        "bikeId": "신고할 자전거 ID",
+        "userId": "신고한 user ID",
+        "contents": "신고 내용"
+    """
     data = request.json
     bike_id = data.get('bikeId')
     user_id = data.get('userId')
@@ -124,8 +156,13 @@ def add_report():
     return jsonify({"message": "Report Succesced"}), 200
 
 # 신고 정보 삭제
+# 완료된 처리건 신고 정보 모두 삭제
 @app.route('/reports', methods=['DELETE'])
 def delete_report():
+    """
+    input:
+        "bikeId": "삭제할 신고 자전거 ID"
+    """
     data = request.json
     bike_id = data.get('bikeId')
 
@@ -138,6 +175,10 @@ def delete_report():
 # 신고 정보 조회
 @app.route('/reports', methods=['GET'])
 def get_report():
+    """
+    input:
+        "bikeId": "조회할 신고 자전거 ID"
+    """
     data = request.json
     bike_id = data.get('bikeId')
 
