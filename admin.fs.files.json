@@ -1,0 +1,11 @@
+[{
+  "_id": {
+    "$oid": "670e0ea2c7f8eb3caaf02ee5"
+  },
+  "filename": "파일1.jpg",
+  "chunkSize": 261120,
+  "length": 130696,
+  "uploadDate": {
+    "$date": "2024-10-15T06:41:38.861Z"
+  }
+}]

@@ -1,0 +1,22 @@
+[{
+  "_id": {
+    "$oid": "670e0ea2c7f8eb3caaf02ee7"
+  },
+  "bikeId": "b003",
+  "userId": "user123",
+  "date": "2024/10/15 15:41:38",
+  "contents": "test",
+  "imageId": {
+    "$oid": "670e0ea2c7f8eb3caaf02ee5"
+  }
+},
+{
+  "_id": {
+    "$oid": "670e2921f9011d45d7c23440"
+  },
+  "bikeId": "b003",
+  "userId": "user123",
+  "date": "2024/10/15 17:34:41",
+  "contents": "test",
+  "imageId": null
+}]
