@@ -2,16 +2,19 @@
 - userId
 - password
 
+## admin Index
+- adminId
+- password
+
 ## bicycles Index
 - bikeId
-- location
-- rentDate
-- returnDate
 - status
 
 ## reports Index
 - bickId
-- contents
-- date
-- imageId
 - userId
+- date
+- category(신고유형)
+- contents
+- imageId
+
