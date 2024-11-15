@@ -8,15 +8,32 @@
   "contents": "test",
   "imageId": {
     "$oid": "670e0ea2c7f8eb3caaf02ee5"
-  }
+  },
+  "category": "broken"
 },
 {
   "_id": {
     "$oid": "670e2921f9011d45d7c23440"
   },
-  "bikeId": "b003",
+  "bikeId": "b002",
   "userId": "user123",
   "date": "2024/10/15 17:34:41",
   "contents": "test",
-  "imageId": null
+  "imageId": {
+    "$oid": "670e0ea2c7f8eb3caaf02ee5"
+  },
+  "category": "broken"
+},
+{
+  "_id": {
+    "$oid": "673716775e5380ad49504ed7"
+  },
+  "bikeId": "b001",
+  "userId": "user123",
+  "date": "2024/10/15 17:34:41",
+  "contents": "test",
+  "imageId": {
+    "$oid": "670e0ea2c7f8eb3caaf02ee5"
+  },
+  "category": "broken"
 }]

@@ -12,6 +12,22 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/admin"
 mongo = PyMongo(app)
 fs = gridfs.GridFS(mongo.db)
 
+# 로그인 시
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    admin = get_admin(username)
+    if not admin == None and admin["password"] == password:
+        return jsonify({"success": True, "message": "Login successful", "role": "admin"})
+
+    user = get_user(username)
+    if not user == None and user["password"] == password:
+        return jsonify({"success": True, "message": "Login successful", "role": "user"})
+
+    return jsonify({"success": False, "message": "Invalid username or password"}), 400
+
 # 자전거 정보 추가
 # 초기 추가 시 status는 'available'로 설정
 @app.route('/bicycles', methods=['POST'])
@@ -144,21 +160,31 @@ def delete_user():
     mongo.db.users.delete_one({"userId": user_id})
     return jsonify({"message": "Deleted user ID"}), 200
 
+# admin 정보 조회
+def get_admin(admin_id):
+    if not mongo.db.admin.find_one({"adminId": admin_id}):
+        return None
+    
+    admin = mongo.db.admin.find_one({"adminId": admin_id})
+    return admin
+
 # 사용자 정보 조회
-@app.route('/users', methods=['GET'])
-def get_user():
+# @app.route('/users', methods=['GET'])
+def get_user(user_id):
     """
     input:
         "userId": "조회할 user ID"
     """
-    data = request.json
-    user_id = data.get('userId')
+    # data = request.json
+    # user_id = data.get('userId')
 
     if not mongo.db.users.find_one({"userId": user_id}):
-        return jsonify({"error": "This userId dosen't exist"}), 400
+        return None
+        # return jsonify({"error": "This userId dosen't exist"}), 400
 
     user = mongo.db.users.find_one({"userId": user_id})
-    return jsonify({"userId": user['userId'], "password": user['password']}), 200
+    # return jsonify({"userId": user['userId'], "password": user['password']}), 200
+    return user
 
 # 신고 정보 추가
 @app.route('/reports', methods=['POST'])
