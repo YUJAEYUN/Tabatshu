@@ -2,16 +2,20 @@
 - userId
 - password
 
+## admin Index
+- adminId
+- password
+
 ## bicycles Index
 - bikeId
-- location
-- rentDate
-- returnDate
 - status
 
 ## reports Index
 - bickId
-- contents
-- date
-- imageId
 - userId
+- date
+- category(신고유형)
+- contents
+- imageId
+
+![image](https://github.com/user-attachments/assets/6b68b5a7-01d3-439c-be8d-94c9cb062cae)
