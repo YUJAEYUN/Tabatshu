@@ -133,15 +133,10 @@ def delete_report():
     mongo.db.reports.delete_many({"bikeId": bike_id})
     return jsonify({"message": "Deleted report"}), 200
 
-# 신고 정보 조회
+# 모든 신고 정보 조회
 @app.route('/reports', methods=['GET'])
-def get_report():
-    bike_id = request.args.get('bikeId')
-
-    if not mongo.db.reports.find_one({"bikeId": bike_id}):
-        return jsonify({"error": "This report doesn't exist"}), 400
-
-    reports = mongo.db.reports.find({"bikeId": bike_id})
+def get_all_reports():
+    reports = mongo.db.reports.find()
     report_list = []
     for report in reports:
         report_data = {
@@ -151,7 +146,7 @@ def get_report():
             "category": report['category'],
             "contents": report['contents']
         }
-        if report['imageId']:
+        if report.get('imageId'):
             report_data['image'] = f"http://127.0.0.1:5000/image/{report['imageId']}"
         report_list.append(report_data)
     return jsonify(report_list), 200
