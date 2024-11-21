@@ -25,7 +25,13 @@ def login():
 
     user = get_user(username)
     if user and user["password"] == password:
-        return jsonify({"success": True, "message": "Login successful", "role": "user"})
+        # users DB에 해당 사용자의 tf_rent 인덱스가 없으면 True로 초기화
+        tf_rent = user.get("tf_rent")
+        if tf_rent == None:
+            mongo.db.users.update_one({"userId": username}, {"$set": {"tf_rent": True}})
+            
+
+        return jsonify({"success": True, "message": "Login successful", "role": "user", "tf_rent": tf_rent})
 
     return jsonify({"success": False, "message": "Invalid username or password"}), 400
 
@@ -46,8 +52,13 @@ def check_bike():
 def rent_bike():
     data = request.get_json()
     bike_id = data.get('bike_id')
+    user_id = data.get('user_id')
 
     bike = mongo.db.bicycles.find_one({"bike_id": bike_id})
+
+    # users DB에서 해당 사용자의 tf_rent를 False로 변경
+    mongo.db.users.update_one({"userId": user_id}, {"$set": {"tf_rent": False}})
+
     if bike:
         if bike["status"] == "available":
             update_bicycle(bike_id, "unavailable")
@@ -62,6 +73,10 @@ def rent_bike():
 def return_bike():
     data = request.get_json()
     bike_id = data.get('bike_id')
+    user_id = data.get('user_id')
+
+    # users DB에서 해당 사용자의 tf_rent를 True로 변경
+    mongo.db.users.update_one({"userId": user_id}, {"$set": {"tf_rent": True}})
 
     bike = mongo.db.bicycles.find_one({"bike_id": bike_id})
     if bike:
