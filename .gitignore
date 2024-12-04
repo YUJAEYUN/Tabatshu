@@ -2,6 +2,18 @@
 node_modules
 /dist
 
+node_modules/
+dist/
+.env.local
+.env.*.local
+.DS_Store
+.idea
+.vscode
+
+git config --global core.autocrlf true
+
+# Ensure .gitignore uses LF
+.gitignore text eol=lf
 
 # local env files
 .env.local
@@ -21,3 +33,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Python virtual environments
+venv/
