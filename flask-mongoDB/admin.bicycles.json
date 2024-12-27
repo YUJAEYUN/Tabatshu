@@ -1,0 +1,21 @@
+[{
+  "_id": {
+    "$oid": "670667d9676a10dcc19d75eb"
+  },
+  "bikeId": "b001",
+  "status": "available"
+},
+{
+  "_id": {
+    "$oid": "670667ed676a10dcc19d75ec"
+  },
+  "bikeId": "b002",
+  "status": "available"
+},
+{
+  "_id": {
+    "$oid": "67066aa7676a10dcc19d75ed"
+  },
+  "bikeId": "b003",
+  "status": "available"
+}]

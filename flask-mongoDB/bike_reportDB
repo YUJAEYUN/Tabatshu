@@ -1,0 +1,178 @@
+from flask import Flask, jsonify, request
+from flask_pymongo import PyMongo
+from datetime import datetime
+import gridfs
+from bson import ObjectId
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+# MongoDB 설정
+app.config["MONGO_URI"] = "mongodb://localhost:27017/admin"
+mongo = PyMongo(app)
+fs = gridfs.GridFS(mongo.db)
+
+# 로그인 시
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    admin = get_admin(username)
+    if admin and admin["password"] == password:
+        return jsonify({"success": True, "message": "Login successful", "role": "admin"})
+
+    user = get_user(username)
+    if user and user["password"] == password:
+        # users DB에 해당 사용자의 tf_rent 인덱스가 없으면 True로 초기화
+        tf_rent = user.get("tf_rent")
+        if tf_rent == None:
+            mongo.db.users.update_one({"userId": username}, {"$set": {"tf_rent": True}})
+            
+
+        return jsonify({"success": True, "message": "Login successful", "role": "user", "tf_rent": tf_rent})
+
+    return jsonify({"success": False, "message": "Invalid username or password"}), 400
+
+# QR 코드로 자전거 확인
+@app.route('/check_bike', methods=['POST'])
+def check_bike():
+    data = request.get_json()
+    bike_id = data.get('bike_id')
+
+    bike = mongo.db.bicycles.find_one({"bike_id": bike_id})
+    if bike:
+        return jsonify({"status": "success", "message": "Bike found", "bike_id": bike_id}), 200
+    else:
+        return jsonify({"status": "error", "message": "Bike ID not found"}), 404
+
+# 자전거 대여 요청 처리
+@app.route('/rent_bike', methods=['POST'])
+def rent_bike():
+    data = request.get_json()
+    bike_id = data.get('bike_id')
+    user_id = data.get('user_id')
+
+    bike = mongo.db.bicycles.find_one({"bike_id": bike_id})
+
+    # users DB에서 해당 사용자의 tf_rent를 False로 변경
+    mongo.db.users.update_one({"userId": user_id}, {"$set": {"tf_rent": False}})
+
+    if bike:
+        if bike["status"] == "available":
+            update_bicycle(bike_id, "unavailable")
+            return jsonify({"status": "success", "message": "Bike rented successfully"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Bike is currently unavailable"}), 403
+    else:
+        return jsonify({"status": "error", "message": "Bike ID not found"}), 404
+
+# 자전거 반납 요청 처리
+@app.route('/return_bike', methods=['POST'])
+def return_bike():
+    data = request.get_json()
+    bike_id = data.get('bike_id')
+    user_id = data.get('user_id')
+
+    # users DB에서 해당 사용자의 tf_rent를 True로 변경
+    mongo.db.users.update_one({"userId": user_id}, {"$set": {"tf_rent": True}})
+
+    bike = mongo.db.bicycles.find_one({"bike_id": bike_id})
+    if bike:
+        if bike["status"] == "unavailable":
+            update_bicycle(bike_id, "available")
+            return jsonify({"status": "success", "message": "Bike returned successfully"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Bike is already available"}), 403
+    else:
+        return jsonify({"status": "error", "message": "Bike ID not found"}), 404
+
+# 자전거 정보 수정 (status)
+def update_bicycle(bike_id, status):
+    if not mongo.db.bicycles.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This bikeId doesn't exist"}), 400
+
+    mongo.db.bicycles.update_one({"bikeId": bike_id}, {"$set": {"status": status}})
+    return jsonify({"message": "Updated bike ID"}), 200
+
+# admin 정보 조회
+def get_admin(admin_id):
+    return mongo.db.admin.find_one({"adminId": admin_id})
+
+# 사용자 정보 조회
+def get_user(user_id):
+    return mongo.db.users.find_one({"userId": user_id})
+
+# 신고 정보 추가
+@app.route('/reports', methods=['POST'])
+def add_report():
+    # JSON 데이터와 파일 수신
+    bike_id = request.form.get('bikeId')
+    user_id = request.form.get('userId')
+    report_category = request.form.get('category')
+    report_content = request.form.get('contents')
+    image = request.files.get('image')
+
+    print(bike_id, user_id, report_category, report_content, image)
+
+    if not mongo.db.bicycles.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This bikeId doesn't exist"}), 400
+
+    if not mongo.db.users.find_one({"userId": user_id}):
+        return jsonify({"error": "This userId doesn't exist"}), 400
+
+    image_id = None
+    if image:
+        image_id = fs.put(image, filename=image.filename)
+
+    mongo.db.reports.insert_one({
+        "bikeId": bike_id,
+        "userId": user_id,
+        "date": datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
+        "category": report_category,
+        "contents": report_content,
+        "imageId": image_id
+    })
+    return jsonify({"message": "Report succeeded"}), 201
+
+# 신고 정보 삭제
+@app.route('/reports', methods=['DELETE'])
+def delete_report():
+    data = request.get_json()
+    bike_id = data.get('bikeId')
+
+    if not mongo.db.reports.find_one({"bikeId": bike_id}):
+        return jsonify({"error": "This report doesn't exist"}), 400
+
+    mongo.db.reports.delete_many({"bikeId": bike_id})
+    return jsonify({"message": "Deleted report"}), 200
+
+# 모든 신고 정보 조회
+@app.route('/reports', methods=['GET'])
+def get_all_reports():
+    reports = mongo.db.reports.find()
+    report_list = []
+    for report in reports:
+        report_data = {
+            "bikeId": report['bikeId'],
+            "userId": report['userId'],
+            "date": report['date'],
+            "category": report['category'],
+            "contents": report['contents']
+        }
+        if report.get('imageId'):
+            report_data['image'] = f"http://127.0.0.1:5000/image/{report['imageId']}"
+        report_list.append(report_data)
+    return jsonify(report_list), 200
+
+# 이미지 로드 시
+@app.route('/image/<image_id>', methods=['GET'])
+def get_image(image_id):
+    image = fs.find_one({"_id": ObjectId(image_id)})
+    if image:
+        return image.read(), 200, {'Content-Type': image.content_type}
+    return jsonify({"error": "Image not found"}), 404
+
+if __name__ == '__main__':
+    app.run(debug=True)
