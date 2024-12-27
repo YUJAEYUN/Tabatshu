@@ -72,22 +72,17 @@
 ### 📅 추진 일정
   - 2024.09.19 목 (팀결성) ~ 2024.12.05 목 (최종발표일)<br/><br/>
 
-## System Design
-    - ### System Requirements
-    <br/><br/>
-    
-  - ### System Dependencies
-<br/><br/>
-
 ## Conclusion
   - ### "타밭슈" 어플리케이션 및 3D프린터 활용한 간이 자전거 잠금해제 모듈 시연 영상
     https://github.com/user-attachments/assets/29c12e63-c1c2-4c8a-bb54-0698997b7eb8
 
+    <br/><br/>
 
-  - <br/><br/>
+---
 ### 앱 소개 영상
 ![1  APP 세부 소개 영상](https://github.com/user-attachments/assets/e5301480-e57b-4a4a-9aad-834b7a7e173e)
 
 
 ## Project Outcome
-- 
+
+https://www.miricanvas.com/v2/design/13zwshl
