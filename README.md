@@ -86,3 +86,5 @@
 ## Project Outcome
 
 https://www.miricanvas.com/v2/design/13zwshl
+
+[오픈소스sw프로그래밍_최종발표_-찐최종.pdf](https://github.com/user-attachments/files/20513296/sw._._-.pdf)
